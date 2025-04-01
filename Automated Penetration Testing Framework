@@ -1,0 +1,79 @@
+import os
+import socket
+import nmap
+import requests
+from ftplib import FTP
+from subprocess import Popen, PIPE
+
+# Port Scanner
+def port_scan(target):
+    print(f"Starting port scan on {target}...")
+    nm = nmap.PortScanner()
+    nm.scan(target, '1-1024')  # Scanning ports 1 to 1024
+    for host in nm.all_hosts():
+        print(f"Host: {host} ({nm[host].hostname()})")
+        for proto in nm[host].all_protocols():
+            print(f"Protocol: {proto}")
+            lport = nm[host][proto].keys()
+            for port in lport:
+                print(f"Port: {port}, State: {nm[host][proto][port]['state']}")
+
+# FTP Brute Force
+def ftp_brute_force(target, user, password_list):
+    print(f"Attempting brute force on FTP server {target}...")
+    try:
+        ftp = FTP(target)
+        for password in password_list:
+            try:
+                ftp.login(user, password)
+                print(f"Success! Password found: {password}")
+                return
+            except Exception as e:
+                continue
+    except Exception as e:
+        print(f"Could not connect to FTP server {target}. Error: {e}")
+
+# HTTP Header Analysis
+def analyze_http_headers(url):
+    print(f"Analyzing HTTP headers for {url}...")
+    try:
+        response = requests.head(url)
+        print("HTTP Headers:")
+        for header, value in response.headers.items():
+            print(f"{header}: {value}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+
+# Vulnerability Scanner (simplified for demo purposes)
+def check_vulnerabilities(target):
+    print(f"Running vulnerability check on {target}...")
+    vulnerabilities = {
+        "Heartbleed": "https://www.htbridge.com/ssltest/?target=",
+        "Shellshock": "https://www.shellshock.io/?target="
+    }
+    for vuln, test_url in vulnerabilities.items():
+        response = requests.get(f"{test_url}{target}")
+        if response.status_code == 200:
+            print(f"Vulnerability found: {vuln} on {target}")
+        else:
+            print(f"{vuln} not found on {target}")
+
+# Function to perform all tasks for the penetration test
+def penetration_test(target, user, password_list):
+    # Step 1: Port Scanning
+    port_scan(target)
+
+    # Step 2: FTP Brute Force (example using a list of common passwords)
+    ftp_brute_force(target, user, ["password123", "admin", "letmein", "123456"])
+
+    # Step 3: HTTP Header Analysis
+    analyze_http_headers(f"http://{target}")
+
+    # Step 4: Basic Vulnerability Scanning
+    check_vulnerabilities(target)
+
+if __name__ == "__main__":
+    target_ip = input("Enter target IP or domain: ")
+    username = input("Enter username for FTP brute force: ")
+    # Start the automated penetration test
+    penetration_test(target_ip, username, [])
