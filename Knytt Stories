@@ -1,0 +1,29 @@
+# Simple Knytt-style movement in Pygame
+import pygame
+
+def knytt_movement():
+    player_x, player_y = 400, 300
+    speed = 3
+    gravity = 0.5
+    jump_strength = -10
+    vel_y = 0
+    on_ground = False
+
+    while True:
+        keys = pygame.key.get_pressed()
+        vel_x = (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * speed
+        vel_y += gravity
+        
+        if keys[pygame.K_UP] and on_ground:
+            vel_y = jump_strength
+        
+        player_x += vel_x
+        player_y += vel_y
+        
+        # Simple collision with ground
+        if player_y > 550:
+            player_y = 550
+            vel_y = 0
+            on_ground = True
+        else:
+            on_ground = False
